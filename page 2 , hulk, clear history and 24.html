@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>21-Day Addiction-Breaking Challenge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            color: white;
+            transition: background-image 0.5s ease;
+            position: relative;
+            z-index: 1;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        .progress-container {
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: transparent;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar::before {
+            content: '';
+            display: block;
+            height: 100%;
+            width: var(--progress-width, 0%);
+            background-color: #007bff;
+            transition: width 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .progress-text {
+            display: block;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            position: relative;
+            z-index: 10;
+        }
+        .day-box {
+            width: 100%;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            background-color: #d3d3d3;
+            border-radius: 5px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+            color: black;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 15;
+            pointer-events: auto;
+        }
+        .day-box.success {
+            background-color: #4caf50;
+            color: white;
+        }
+        .day-box.failure {
+            background-color: #f44336;
+            color: white;
+        }
+        .day-box.disabled {
+            cursor: default;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .history {
+            margin-top: 20px;
+            position: relative;
+            z-index: 10;
+        }
+        .history h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .history p {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .message {
+            font-size: 18px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            position: relative;
+            z-index: 1000;
+            display: inline-block;
+            pointer-events: auto;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:not(.hidden) {
+            display: inline-block !important;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            color: black;
+            max-height: 80vh;
+            overflow-y: auto;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-content button {
+            margin: 10px;
+            background-color: #007bff;
+            pointer-events: auto;
+        }
+        .modal-content button:hover {
+            background-color: #0056b3;
+        }
+        .modal-content ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+        .modal-content li {
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .footer {
+            text-align: left;
+            margin-top: 20px;
+            position: relative;
+            z-index: 10;
+        }
+        #clear-history-btn {
+            background-color: #f44336;
+        }
+        #clear-history-btn:hover {
+            background-color: #d32f2f;
+        }
+        @media (max-width: 600px) {
+            .day-box {
+                height: 35px;
+                line-height: 35px;
+                font-size: 10px;
+            }
+            .days-grid {
+                gap: 6px;
+            }
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            button {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>21-Day Addiction-Breaking Challenge</h1>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <span id="progress-text">0% (0/21 days)</span>
+        </div>
+        <div class="days-grid" id="days-grid"></div>
+        <div class="history">
+            <h2>Completed Cycles</h2>
+            <p id="cycle-count">Cycles Completed: 0</p>
+            <button id="history-btn">View History</button>
+        </div>
+        <div id="message" class="message"></div>
+        <button id="start-again" class="hidden">Start Again</button>
+        <div class="footer">
+            <button id="clear-history-btn">Clear History</button>
+        </div>
+    </div>
+    <div id="custom-prompt" class="modal">
+        <div class="modal-content">
+            <p>Did you meet your target today?</p>
+            <button id="prompt-yes">Yes</button>
+            <button id="prompt-no">No</button>
+        </div>
+    </div>
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <h2>Cycle History</h2>
+            <ul id="history-list"></ul>
+            <button id="close-history">Close</button>
+        </div>
+    </div>
+    <div id="clear-history-modal" class="modal">
+        <div class="modal-content">
+            <p>Are you sure you want to clear your history? This will reset all progress and cycles.</p>
+            <button id="clear-history-confirm">Confirm</button>
+            <button id="clear-history-cancel">Cancel</button>
+        </div>
+    </div>
+    <div id="time-restriction-modal" class="modal">
+        <div class="modal-content">
+            <p>This task can only be done after 24 hours.</p>
+            <button id="close-time-restriction">Close</button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const daysGrid = document.getElementById('days-grid');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const message = document.getElementById('message');
+            const startAgainBtn = document.getElementById('start-again');
+            const cycleCount = document.getElementById('cycle-count');
+            const historyBtn = document.getElementById('history-btn');
+            const clearHistoryBtn = document.getElementById('clear-history-btn');
+            const customPrompt = document.getElementById('custom-prompt');
+            const promptYes = document.getElementById('prompt-yes');
+            const promptNo = document.getElementById('prompt-no');
+            const historyModal = document.getElementById('history-modal');
+            const historyList = document.getElementById('history-list');
+            const closeHistory = document.getElementById('close-history');
+            const clearHistoryModal = document.getElementById('clear-history-modal');
+            const clearHistoryConfirm = document.getElementById('clear-history-confirm');
+            const clearHistoryCancel = document.getElementById('clear-history-cancel');
+            const timeRestrictionModal = document.getElementById('time-restriction-modal');
+            const closeTimeRestriction = document.getElementById('close-time-restriction');
+            const container = document.querySelector('.container');
+
+            // Original background for reverting
+            const originalBackground = "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80')";
+            // Hulk GIF URL for cycle completion
+            const hulkGifUrl = 'https://i.imgur.com/2UeX5NK.gif';
+            // Duration to show GIF
+            const gifDuration = 5000; // 5 seconds
+
+            let state = JSON.parse(localStorage.getItem('challengeState')) || {
+                days: Array(21).fill(null),
+                currentDay: 0,
+                cycles: [],
+                successMessageIndex: 0,
+                lastMarkedTime: null
+            };
+
+            // Validate state
+            if (state.currentDay > 21 || !Number.isInteger(state.currentDay)) {
+                console.log(`Invalid currentDay ${state.currentDay}, resetting to 0`);
+                state.currentDay = 0;
+            }
+            if (!Array.isArray(state.days) || state.days.length !== 21) {
+                console.log('Invalid days array, resetting');
+                state.days = Array(21).fill(null);
+            }
+            if (!Array.isArray(state.cycles)) {
+                console.log('Invalid cycles array, resetting');
+                state.cycles = [];
+            }
+            if (state.lastMarkedTime && isNaN(new Date(state.lastMarkedTime).getTime())) {
+                console.log('Invalid lastMarkedTime, resetting');
+                state.lastMarkedTime = null;
+            }
+            // Ensure days align with currentDay
+            if (state.currentDay > 0 && state.currentDay <= 21) {
+                for (let i = 0; i < state.currentDay; i++) {
+                    if (state.days[i] === null) {
+                        state.days[i] = false;
+                    }
+                }
+            }
+
+            // Function to check if challenge is complete
+            function isChallengeComplete() {
+                const complete = state.days.every(day => day === true) || state.currentDay >= 21;
+                console.log(`isChallengeComplete: ${complete}, currentDay: ${state.currentDay}, days: ${state.days}`);
+                return complete;
+            }
+
+            // Function to check if 24 hours have passed
+            function is24HoursPassed() {
+                if (!state.lastMarkedTime) return true;
+                const lastTime = new Date(state.lastMarkedTime);
+                const now = new Date();
+                const hoursDiff = (now - lastTime) / (1000 * 60 * 60);
+                console.log(`is24HoursPassed: ${hoursDiff >= 24}, hoursDiff: ${hoursDiff}, lastMarkedTime: ${state.lastMarkedTime}`);
+                return hoursDiff >= 24;
+            }
+
+            let currentCallback = null;
+
+            const successMessages = [
+                "You're killing it! Keep pushing forward!",
+                "Amazing work! You're building unstoppable momentum!",
+                "Nailed it! One step closer to crushing this challenge!"
+            ];
+
+            function renderDays() {
+                daysGrid.innerHTML = '';
+                const challengeComplete = isChallengeComplete();
+                console.log(`Rendering days, challengeComplete: ${challengeComplete}, currentDay: ${state.currentDay}`);
+                state.days.forEach((day, index) => {
+                    const dayBox = document.createElement('div');
+                    dayBox.className = 'day-box';
+                    dayBox.textContent = `Day ${index + 1}`;
+                    if (day === true) dayBox.classList.add('success');
+                    if (day === false) dayBox.classList.add('failure');
+                    if (challengeComplete) {
+                        dayBox.classList.add('disabled');
+                        dayBox.style.cursor = 'default';
+                        console.log(`Day ${index + 1} disabled due to challenge complete`);
+                    } else {
+                        dayBox.style.cursor = index === state.currentDay ? 'pointer' : 'default';
+                        if (index === state.currentDay) {
+                            try {
+                                dayBox.addEventListener('click', () => {
+                                    console.log(`[${new Date().toISOString()}] Day ${index + 1} click event triggered`);
+                                    handleDayClick(index);
+                                });
+                                console.log(`Day ${index + 1} clickable, added click handler`);
+                            } catch (e) {
+                                console.error(`[${new Date().toISOString()}] Error adding click handler to Day ${index + 1}:`, e.message);
+                            }
+                        } else {
+                            console.log(`Day ${index + 1} not clickable, currentDay: ${state.currentDay}`);
+                        }
+                    }
+                    daysGrid.appendChild(dayBox);
+                });
+            }
+
+            function showHulkGif(callback) {
+                console.log(`[${new Date().toISOString()}] Showing Hulk GIF`);
+                container.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('${hulkGifUrl}')`;
+                setTimeout(() => {
+                    console.log(`[${new Date().toISOString()}] Reverting to original background`);
+                    container.style.backgroundImage = originalBackground;
+                    callback();
+                }, gifDuration);
+            }
+
+            function handleDayClick(index) {
+                try {
+                    console.log(`[${new Date().toISOString()}] handleDayClick called for index ${index}, currentDay: ${state.currentDay}, isChallengeComplete: ${isChallengeComplete()}`);
+                    if (index !== state.currentDay || isChallengeComplete()) {
+                        console.log(`Click ignored: index=${index}, currentDay=${state.currentDay}, isChallengeComplete=${isChallengeComplete()}`);
+                        return;
+                    }
+                    if (!is24HoursPassed()) {
+                        console.log(`[${new Date().toISOString()}] 24-hour restriction active, showing time restriction modal`);
+                        timeRestrictionModal.style.display = 'flex';
+                        return;
+                    }
+                    console.log(`Day ${index + 1} clicked, currentDay: ${state.currentDay}`);
+                    showCustomPrompt((choice) => {
+                        state.days[index] = choice;
+                        state.lastMarkedTime = new Date().toISOString();
+                        if (!choice) {
+                            state.days = Array(21).fill(null);
+                            state.currentDay = 0;
+                            state.lastMarkedTime = null;
+                            message.textContent = "You slipped—but that doesn’t mean you failed. Progress isn’t lost; it’s built every time you choose to rise again. Get up. You’re stronger now.";
+                            startAgainBtn.classList.remove('hidden');
+                            console.log('Failure: Reset challenge, Start Again button shown');
+                        } else {
+                            state.days[index] = true;
+                            state.currentDay++;
+                            console.log(`Success: currentDay incremented to ${state.currentDay}`);
+                            if (state.currentDay < 21) {
+                                const messageIndex = state.successMessageIndex % successMessages.length;
+                                message.textContent = successMessages[messageIndex];
+                                state.successMessageIndex++;
+                                startAgainBtn.classList.add('hidden');
+                            } else if (state.currentDay === 21) {
+                                const completionDate = new Date().toLocaleDateString();
+                                state.cycles.push(completionDate);
+                                showHulkGif(() => {
+                                    message.textContent = 'Congratulations! You crushed the 21-day challenge! Start again from Day 1 and keep pushing—no limits!';
+                                    startAgainBtn.classList.remove('hidden');
+                                    console.log('Cycle completed, Start Again button shown');
+                                });
+                            }
+                        }
+                        updateProgress();
+                        saveState();
+                        renderDays();
+                        renderCycleCount();
+                    });
+                } catch (e) {
+                    console.error(`[${new Date().toISOString()}] Error in handleDayClick:`, e.message);
+                }
+            }
+
+            function showCustomPrompt(callback) {
+                customPrompt.style.display = 'flex';
+                currentCallback = callback;
+            }
+
+            promptYes.addEventListener('click', () => {
+                console.log(`[${new Date().toISOString()}] Prompt Yes clicked`);
+                customPrompt.style.display = 'none';
+                if (currentCallback) currentCallback(true);
+            });
+
+            promptNo.addEventListener('click', () => {
+                console.log(`[${new Date().toISOString()}] Prompt No clicked`);
+                customPrompt.style.display = 'none';
+                if (currentCallback) currentCallback(false);
+            });
+
+            function updateProgress() {
+                const progress = Math.min((state.currentDay / 21) * 100, 100);
+                progressBar.style.setProperty('--progress-width', `${progress}%`);
+                progressText.textContent = `${Math.round(progress)}% (${Math.min(state.currentDay, 21)}/21 days)`;
+                console.log(`[${new Date().toISOString()}] Progress updated: ${progress}% (${state.currentDay}/21 days)`);
+            }
+
+            function saveState() {
+                localStorage.setItem('challengeState', JSON.stringify(state));
+            }
+
+            function renderCycleCount() {
+                cycleCount.textContent = `Cycles Completed: ${state.cycles.length}`;
+            }
+
+            function showHistory() {
+                historyList.innerHTML = '';
+                if (state.cycles.length === 0) {
+                    const li = document.createElement('li');
+                    li.textContent = 'No cycles completed yet.';
+                    historyList.appendChild(li);
+                } else {
+                    state.cycles.forEach((cycle, index) => {
+                        const li = document.createElement('li');
+                        li.textContent = `Cycle ${index + 1}: Completed on ${cycle}`;
+                        historyList.appendChild(li);
+                    });
+                }
+                historyModal.style.display = 'flex';
+            }
+
+            try {
+                historyBtn.addEventListener('click', () => {
+                    console.log(`[${new Date().toISOString()}] View History button clicked`);
+                    showHistory();
+                });
+            } catch (e) {
+                console.error(`[${new Date().toISOString()}] Error adding click handler to historyBtn:`, e.message);
+            }
+
+            try {
+                closeHistory.addEventListener('click', () => {
+                    console.log(`[${new Date().toISOString()}] Close History modal clicked`);
+                    historyModal.style.display = 'none';
+                });
+            } catch (e) {
+                console.error(`[${new Date().toISOString()}] Error adding click handler to closeHistory:`, e.message);
+            }
+
+            try {
+                startAgainBtn.addEventListener('click', () => {
+                    console.log('Start Again clicked');
+                    state.days = Array(21).fill(null);
+                    state.currentDay = 0;
+                    state.lastMarkedTime = null;
+                    message.textContent = 'New challenge started! Keep going!';
+                    startAgainBtn.classList.add('hidden');
+                    container.style.backgroundImage = originalBackground;
+                    updateProgress();
+                    saveState();
+                    renderDays();
+                    renderCycleCount();
+                });
+            } catch (e) {
+                console.error(`[${new Date().toISOString()}] Error adding click handler to startAgainBtn:`, e.message);
+            }
+
+            try {
+                clearHistoryBtn.addEventListener('click', () => {
+                    console.log(`[${new Date().toISOString()}] Clear History button clicked, showing confirmation modal`);
+                    clearHistoryModal.style.display = 'flex';
+                });
+            } catch (e) {
+                console.error(`[${new Date().toISOString()}] Error adding click handler to clearHistoryBtn:`, e.message);
+            }
+
+            try {
+                clearHistoryConfirm.addEventListener('click', () => {
+                    console.log('Clear History confirmed');
+                    state = {
+                        days: Array(21).fill(null),
+                        currentDay: 0,
+                        cycles: [],
+                        successMessageIndex: 0,
+                        lastMarkedTime: null
+                    };
+                    console.log('State after clear:', state);
+                    message.textContent = 'History cleared! Start your new challenge!';
+                    startAgainBtn.classList.add('hidden');
+                    container.style.backgroundImage = originalBackground;
+                    updateProgress();
+                    saveState();
+                    renderDays();
+                    renderCycleCount();
+                    clearHistoryModal.style.display = 'none';
+                });
+            } catch (e) {
+                console.error(`[${new Date().toISOString()}] Error adding click handler to clearHistoryConfirm:`, e.message);
+            }
+
+            try {
+                clearHistoryCancel.addEventListener('click', () => {
+                    console.log('Clear History cancelled');
+                    clearHistoryModal.style.display = 'none';
+                });
+            } catch (e) {
+                console.error(`[${new Date().toISOString()}] Error adding click handler to clearHistoryCancel:`, e.message);
+            }
+
+            try {
+                closeTimeRestriction.addEventListener('click', () => {
+                    console.log('Time restriction modal closed');
+                    timeRestrictionModal.style.display = 'none';
+                });
+            } catch (e) {
+                console.error(`[${new Date().toISOString()}] Error adding click handler to closeTimeRestriction:`, e.message);
+            }
+
+            console.log('Initial state:', state);
+            renderDays();
+            renderCycleCount();
+            updateProgress();
+            if (isChallengeComplete()) {
+                showHulkGif(() => {
+                    message.textContent = 'Congratulations! You crushed the 21-day challenge! Start again from Day 1 and keep pushing—no limits!';
+                    startAgainBtn.classList.remove('hidden');
+                    console.log('Initial render: Challenge complete, Start Again button shown');
+                });
+            } else if (state.currentDay > 0) {
+                message.textContent = `You're on Day ${state.currentDay + 1}. Keep going!`;
+                startAgainBtn.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
